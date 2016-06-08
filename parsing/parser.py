@@ -24,7 +24,9 @@ class Parser:
                 if reading_digit:
                     buff.append(line)
                 elif len(buff) > 0:
-                    digits.append(self.parse_digit(buff))
+                    dig = self.parse_digit(buff)
+                    dig.normalise()
+                    digits.append(dig)
                     buff = []
 
         return digits
@@ -39,7 +41,10 @@ class Parser:
             for line in lines:
                 if line.startswith(' '):
                     points = line.split(' ')
-                    current_curve.append((points[1], points[3]))
+                    first_point = next(s for s in points if s != '')
+                    points.reverse()
+                    last_point = next(s for s in points if s != '')
+                    current_curve.append([int(first_point), int(last_point)])
                 elif line.startswith('.PEN_UP'):
                     dig.add_curve(current_curve)
                     current_curve = []

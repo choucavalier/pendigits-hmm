@@ -16,5 +16,5 @@ def plot_digit(digit):
 
         plt.plot(x_points, y_points, linewidth = 2.0)
 
-    plt.axis([0, 500, 0, 500])
+    plt.axis([-250, 250, -250, 250])
     plt.show()
