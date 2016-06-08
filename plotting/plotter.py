@@ -1,3 +1,5 @@
+from config import settings
+
 import matplotlib.pyplot as plt
 import itertools
 
@@ -16,5 +18,5 @@ def plot_digit(digit):
 
         plt.plot(x_points, y_points, linewidth = 2.0)
 
-    plt.axis([-250, 250, -250, 250])
+    plt.axis([settings.IMAGE_PLOT_X_MIN, settings.IMAGE_PLOT_X_MAX, settings.IMAGE_PLOT_Y_MIN, settings.IMAGE_PLOT_Y_MAX])
     plt.show()
