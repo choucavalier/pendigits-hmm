@@ -10,7 +10,7 @@ class Digit:
         self.curves.append(points)
 
     def set_label(self, label):
-        self.label = label
+        self.label = int(label)
 
     def normalise(self):
 
@@ -67,6 +67,11 @@ class Digit:
 
     def __repr__(self):
         ret = "label : " + str(self.label) + "\n"
-        ret += "Number of Curves : " + str(len(self.curves)) + "\n"
+
+        n_points = 0
+        for curve in self.curves:
+            n_points += len(curve)
+
+        ret += "Number of Curves : " + str(len(self.curves)) + " , Number of Points : " + str(n_points) + "\n"
         ret += str(self.curves)
         return ret
