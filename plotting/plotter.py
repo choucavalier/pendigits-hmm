@@ -70,3 +70,45 @@ def plot_digits_heatmap(digits, display_progress = False):
 
     f.close()
     plt.show();
+
+
+
+def plot_digit_observations(digit, centroids, n_observation_classes, display_progress = False):
+
+    fig=plt.figure()
+    ax=fig.add_subplot(111)
+
+    f = FloatProgress(min=0, max=100)
+    if display_progress:
+        display(f)
+
+    curves = []
+    current_curve = []
+    for observation in digit.observations:
+        if observation < n_observation_classes - 2:
+            point = centroids[observation]
+            current_curve.append(point)
+        elif observation == n_observation_classes - 1: # pen up
+            if len(current_curve) > 0:
+                curves.append(current_curve)
+            current_curve = []
+
+    n_points = 0
+    for curve in curves:
+        n_points += len(curve)
+
+    i = 0
+    for curve in curves:
+        x_points = []
+        y_points = []
+        for point in curve:
+            x_points.append(point[0])
+            y_points.append(point[1])
+            f.value = 100.0*(float(i) / float(n_points))
+            i += 1
+
+        plt.plot(x_points, y_points, linewidth = 2.0)
+    f.close()
+
+    plt.axis([settings.IMAGE_PLOT_X_MIN, settings.IMAGE_PLOT_X_MAX, settings.IMAGE_PLOT_Y_MIN, settings.IMAGE_PLOT_Y_MAX])
+    plt.show()

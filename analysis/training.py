@@ -79,8 +79,15 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
             hidden_markov_models.append(hidden_markov_model)
         else:
 
+            digit_observations = []
+            for dig in digits:
+                if dig.label == digit_label:
+                    for observation in dig.observations:
+                        if not observation in digit_observations:
+                            digit_observations.append(observation)
+
             transmat = initialise_random_transition_matrix(n_hidden_states)
-            emitmat = initialise_random_emission_matrix(n_hidden_states, n_observation_classes)
+            emitmat = initialise_random_emission_matrix(n_hidden_states, len(digit_observations))
             startprob = initialise_random_start_probability_matrix(n_hidden_states)
 
             h = hmm.MultinomialHMM(n_components=n_hidden_states)
@@ -100,7 +107,7 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
             X = le.fit_transform(X)
             h.fit(np.atleast_2d(X).T, lengths)
 
-            hidden_markov_model = HiddenMarkovModel(h, le, digit_label)
+            hidden_markov_model = HiddenMarkovModel(h, le, digit_label, digit_observations)
             hidden_markov_models.append(hidden_markov_model)
 
             if not os.path.exists(directory):
@@ -112,10 +119,12 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
 
 class HiddenMarkovModel():
 
-    def __init__(self, multinomialHMM, label_encoder, digit_label):
+    def __init__(self, multinomialHMM, label_encoder, digit_label, digit_observations):
+
         self.hidden_markov_model = multinomialHMM
         self.label_encoder = label_encoder
         self.digit_label = digit_label
+        self.digit_observations = digit_observations
 
 def initialise_random_transition_matrix(n_hidden_states):
 
