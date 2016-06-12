@@ -1,4 +1,5 @@
 from config import settings
+from sklearn import preprocessing
 
 from scipy.cluster.vq import vq, kmeans, whiten
 import pickle
@@ -6,9 +7,10 @@ import os.path
 import hmmlearn.hmm as hmm
 import numpy as np
 
+
 def get_digit_kmeans_centroids(digits, n_clusters):
 
-    filename = settings.CENTROIDS_FILENAME + "_" + str(settings.N_OBSERVATION_CLASSES) + ".dat"
+    filename = settings.CENTROIDS_DIRECTORY + "centroids_" + str(n_clusters) + ".dat"
     if os.path.isfile(filename):
         centroids = pickle.load(open(filename, 'rb'))
         return centroids
@@ -28,10 +30,10 @@ def get_digit_kmeans_centroids(digits, n_clusters):
         return centroids
 
 
-def set_digit_observations(digits, centroids):
+def set_digit_observations(digits, centroids, n_observation_classes):
 
-    pen_down_label = settings.N_OBSERVATION_CLASSES - 2
-    pen_up_label = settings.N_OBSERVATION_CLASSES - 1
+    pen_down_label = n_observation_classes - 2
+    pen_up_label = n_observation_classes - 1
 
     for digit in digits:
 
@@ -48,7 +50,7 @@ def set_digit_observations(digits, centroids):
                 curve_data.append(point)
             idx,_ = vq(curve_data, centroids)
             for value in idx:
-                observations.append(value)
+                observations.append(int(value))
 
             i += 1
             if i < len(digit.curves):
@@ -58,37 +60,77 @@ def set_digit_observations(digits, centroids):
         observations.append(pen_up_label)
         digit.set_observations(observations)
 
-def train_hmm(digits):
+def train_hmm(digits, n_observation_classes, n_hidden_states):
 
     hidden_markov_models = []
 
     for i in range(0, 10):
 
-        label = i + 1
-        if label == 10:
-            label = 0
+        digit_label = i + 1
+        if digit_label == 10:
+            digit_label = 0
 
-        transmat = initialise_random_transition_matrix()
-        emitmat = initialise_random_emission_matrix()
-        startprob = initialise_random_start_probability_matrix()
+        directory = settings.HIDDEN_MARKOV_MODE_DIRECTORY + "centroids_" + str(n_observation_classes - 2)
+        directory += "/hidden_states_" + str(n_hidden_states)
+        filename = "digit_label_" + str(digit_label) + ".dat"
+        path = directory + "/" + filename
+        if os.path.isfile(path):
+            hidden_markov_model = pickle.load(open(path, 'rb'))
+            hidden_markov_models.append(hidden_markov_model)
+        else:
 
+            transmat = initialise_random_transition_matrix(n_hidden_states)
+            emitmat = initialise_random_emission_matrix(n_hidden_states, n_observation_classes)
+            startprob = initialise_random_start_probability_matrix(n_hidden_states)
+
+            h = hmm.MultinomialHMM(n_components=n_hidden_states)
+            h.startprob_ = startprob
+            h.transmat_ = transmat
+            h.emissionprob_ = emitmat
+
+            samples = []
+            lengths = []
+            for dig in digits:
+                if dig.label == digit_label:
+                    samples += dig.observations
+                    lengths.append(len(dig.observations))
+
+            le = preprocessing.LabelEncoder()
+            X = np.array(samples)
+            X = le.fit_transform(X)
+            h.fit(np.atleast_2d(X).T, lengths)
+
+            hidden_markov_model = HiddenMarkovModel(h, le, digit_label)
+            hidden_markov_models.append(hidden_markov_model)
+
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            with open(path,'wb') as f:
+                pickle.dump(hidden_markov_model,f)
 
     return hidden_markov_models
 
-def initialise_random_transition_matrix():
+class HiddenMarkovModel():
 
-    transmat = np.random.rand(settings.N_HIDDEN_MARKOV_MODEL_STATES, settings.N_HIDDEN_MARKOV_MODEL_STATES)
+    def __init__(self, multinomialHMM, label_encoder, digit_label):
+        self.hidden_markov_model = multinomialHMM
+        self.label_encoder = label_encoder
+        self.digit_label = digit_label
+
+def initialise_random_transition_matrix(n_hidden_states):
+
+    transmat = np.random.rand(n_hidden_states, n_hidden_states)
     row_sums = transmat.sum(axis=1)
     return transmat / row_sums[:, np.newaxis]
 
-def initialise_random_emission_matrix():
+def initialise_random_emission_matrix(n_hidden_states, n_observation_classes):
 
-    emitmat = np.random.rand(settings.N_HIDDEN_MARKOV_MODEL_STATES, settings.N_OBSERVATION_CLASSES)
+    emitmat = np.random.rand(n_hidden_states, n_observation_classes)
     row_sums = emitmat.sum(axis=1)
     return emitmat / row_sums[:, np.newaxis]
 
-def initialise_random_start_probability_matrix():
+def initialise_random_start_probability_matrix(n_hidden_states):
 
-    startprob = np.random.rand(1, settings.N_HIDDEN_MARKOV_MODEL_STATES)
+    startprob = np.random.rand(1, n_hidden_states)
     row_sums = startprob.sum(axis=1)
     return startprob / row_sums[:, np.newaxis]

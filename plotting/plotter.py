@@ -3,7 +3,7 @@ from config import settings
 import matplotlib.pyplot as plt
 import numpy as np
 import itertools
-from IPython.html.widgets import FloatProgress
+from ipywidgets import FloatProgress
 from IPython.display import display
 
 
