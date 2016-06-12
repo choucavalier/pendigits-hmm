@@ -1,19 +1,32 @@
+from config import settings
+
 from scipy.cluster.vq import vq, kmeans, whiten
+import pickle
+import os.path
 
 def get_digit_kmeans_centroids(digits, n_clusters):
 
-    data = []
-    for digit in digits:
-        for curve in digit.curves:
-            for point in curve:
-                data.append(point)
+    if os.path.isfile(settings.CENTROIDS_FILENAME):
+        centroids = pickle.load(open(settings.CENTROIDS_FILENAME, 'rb'))
+        return centroids
+    else:
 
-    centroids, _ = kmeans(data, n_clusters)
+        data = []
+        for digit in digits:
+            for curve in digit.curves:
+                for point in curve:
+                    data.append(point)
 
-    return centroids
+        centroids, _ = kmeans(data, n_clusters)
+
+        with open(settings.CENTROIDS_FILENAME,'wb') as f:
+            pickle.dump(centroids,f)
+
+        return centroids
 
 
 def set_digit_observations(digits, centroids):
+
 
     for digit in digits:
 
