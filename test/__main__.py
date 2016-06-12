@@ -1,6 +1,7 @@
 from parsing import parser, digit
 from plotting import plotter
 from analysis import training
+from config import settings
 
 def main():
 
@@ -16,7 +17,7 @@ def test_plot_all_digits():
     #print("finished parsing digits")
 
     #print("calculating centroids")
-    centroids = training.get_digit_kmeans_centroids(train_digits, 14)
+    centroids = training.get_digit_kmeans_centroids(train_digits, settings.N_OBSERVATION_CLASSES - 2)
     #print("finished calculating centroids")
     #print(centroids)
 

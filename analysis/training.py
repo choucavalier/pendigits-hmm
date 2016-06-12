@@ -8,8 +8,9 @@ import numpy as np
 
 def get_digit_kmeans_centroids(digits, n_clusters):
 
-    if os.path.isfile(settings.CENTROIDS_FILENAME):
-        centroids = pickle.load(open(settings.CENTROIDS_FILENAME, 'rb'))
+    filename = settings.CENTROIDS_FILENAME + "_" + str(settings.N_OBSERVATION_CLASSES) + ".dat"
+    if os.path.isfile(filename):
+        centroids = pickle.load(open(filename, 'rb'))
         return centroids
     else:
 
@@ -21,7 +22,7 @@ def get_digit_kmeans_centroids(digits, n_clusters):
 
         centroids, _ = kmeans(data, n_clusters)
 
-        with open(settings.CENTROIDS_FILENAME,'wb') as f:
+        with open(filename,'wb') as f:
             pickle.dump(centroids,f)
 
         return centroids
@@ -29,11 +30,13 @@ def get_digit_kmeans_centroids(digits, n_clusters):
 
 def set_digit_observations(digits, centroids):
 
+    pen_down_label = settings.N_OBSERVATION_CLASSES - 2
+    pen_up_label = settings.N_OBSERVATION_CLASSES - 1
 
     for digit in digits:
 
         observations = []
-        observations.append(254) # pen down
+        observations.append(pen_down_label)
 
         i = 0
         while i < len(digit.curves):
@@ -49,10 +52,10 @@ def set_digit_observations(digits, centroids):
 
             i += 1
             if i < len(digit.curves):
-                observations.append(255) # pen up
-                observations.append(254) # pen down
+                observations.append(pen_up_label)
+                observations.append(pen_down_label)
 
-        observations.append(255) # pen up
+        observations.append(pen_up_label)
         digit.set_observations(observations)
 
 def train_hmm(digits):
