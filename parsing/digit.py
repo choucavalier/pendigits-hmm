@@ -12,6 +12,9 @@ class Digit:
     def set_label(self, label):
         self.label = int(label)
 
+    def set_observations(self, observations):
+        self.observations = observations
+
     def normalise(self):
 
         self.normalise_average()

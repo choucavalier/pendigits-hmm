@@ -37,8 +37,11 @@ def plot_digit(digit, display_progress = False):
     plt.show()
 
 
-def plot_digits_heatmap(digits):
+def plot_digits_heatmap(digits, display_progress = False):
 
+    f = FloatProgress(min=0, max=100)
+    if display_progress:
+        display(f)
 
     plt.clf();
     _, axarr = plt.subplots(2, 5);
@@ -63,5 +66,7 @@ def plot_digits_heatmap(digits):
 
             axarr[i, j].imshow(np.rot90(heatmap), extent=extent);
             #axarr[i, j].axis([settings.IMAGE_PLOT_X_MIN, settings.IMAGE_PLOT_X_MAX, settings.IMAGE_PLOT_Y_MIN, settings.IMAGE_PLOT_Y_MAX]);
+            f.value += 10
 
+    f.close()
     plt.show();

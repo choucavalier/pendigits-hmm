@@ -1,5 +1,6 @@
 from parsing import parser, digit
 from plotting import plotter
+from analysis import training
 
 def main():
 
@@ -9,11 +10,17 @@ def main():
 def test_plot_all_digits():
 
     parse = parser.Parser();
+    print("parsing digits")
     train_digits = parse.parse_file('data/pendigits-train');
     test_digits = parse.parse_file('data/pendigits-test')
+    print("finished parsing digits")
 
-    #plotter.plot_digit(train_digits[20])
-    plotter.plot_all_digit_points(train_digits)
+    print("calculating centroids")
+    centroids = training.get_digit_kmeans_centroids(train_digits, 14)
+    print("finished calculating centroids")
+    #print(centroids)
+
+    training.set_digit_observations(train_digits, centroids)
 
 
 if __name__ == '__main__':
