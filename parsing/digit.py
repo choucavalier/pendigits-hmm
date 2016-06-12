@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class Digit:
 
@@ -14,9 +15,9 @@ class Digit:
 
     def set_observations(self, observations):
         self.observations = observations
+        self.np_array_observations = np.asarray(observations)
 
     def normalise(self):
-
         self.normalise_average()
         self.normalise_variance()
 
