@@ -63,7 +63,7 @@ def set_digit_observations(digits, centroids, n_observation_classes):
         digit.set_observations(observations)
 
 
-def train_hmm(digits, n_observation_classes, n_hidden_states):
+def train_hmm(digits, n_observation_classes, n_hidden_states, n_iter, tol):
 
     hidden_markov_models = []
 
@@ -74,7 +74,7 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
             digit_label = 0
 
         directory = settings.HIDDEN_MARKOV_MODE_DIRECTORY + "centroids_" + str(n_observation_classes - 3)
-        directory += "/hidden_states_" + str(n_hidden_states)
+        directory += "/hidden_states_" + str(n_hidden_states) + "/n_iter_" + str(n_iter) + "/tol_" + str(tol)
         filename = "digit_label_" + str(digit_label) + ".dat"
         path = directory + "/" + filename
         if os.path.isfile(path):
@@ -82,32 +82,32 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
             hidden_markov_models.append(hidden_markov_model)
         else:
 
-            digit_observations = []
+            current_digits = []
+            digit_observations = [] # set of observations occuring in observation sequences
+            samples = [] # concatenated observation sequences
+            lengths = [] # lengths of observation sequences in samples
             for dig in digits:
                 if dig.label == digit_label:
                     for observation in dig.observations:
                         if not observation in digit_observations:
                             digit_observations.append(observation)
-
-            transmat = initialise_random_transition_matrix(n_hidden_states)
-            emitmat = initialise_random_emission_matrix(n_hidden_states, len(digit_observations))
-            startprob = initialise_random_start_probability_matrix(n_hidden_states)
-
-            h = hmm.MultinomialHMM(n_components=n_hidden_states, verbose=settings.HIDDEN_MARKOV_MODEL_VERBOSE, n_iter = settings.HIDDEN_MARKOV_MODEL_N_ITER)
-            h.startprob_ = startprob
-            h.transmat_ = transmat
-            h.emissionprob_ = emitmat
-
-            samples = []
-            lengths = []
-            for dig in digits:
-                if dig.label == digit_label:
+                    current_digits.append(dig)
                     samples += dig.observations
                     lengths.append(len(dig.observations))
 
             le = preprocessing.LabelEncoder()
             X = np.array(samples)
             X = le.fit_transform(X)
+
+            startprob = initialise_improved_start_probability_matrix(n_hidden_states)
+            transmat = initialise_improved_transition_matrix(n_hidden_states)
+            emitmat = initialise_improved_emission_matrix(n_hidden_states, current_digits, len(digit_observations), le)
+
+            h = hmm.MultinomialHMM(n_components=n_hidden_states, verbose=settings.HIDDEN_MARKOV_MODEL_VERBOSE, n_iter=n_iter, tol=tol)
+            h.startprob_ = startprob
+            h.transmat_ = transmat
+            h.emissionprob_ = emitmat
+
             h.fit(np.atleast_2d(X).T, lengths)
 
             hidden_markov_model = HiddenMarkovModel(h, le, digit_label, digit_observations)
@@ -149,12 +149,68 @@ def initialise_random_start_probability_matrix(n_hidden_states):
 
 
 
-def initialise_better_matrices(n_hidden_states, digit_observations):
 
-    transmat = np.zeros(n_hidden_states, n_hidden_states)
-    emitmat = np.zeros(n_hidden_states, n_observation_classes)
-    startprob = np.zeros(1, n_hidden_states)
+def initialise_improved_start_probability_matrix(n_hidden_states):
+
+    startprob = np.zeros((1, n_hidden_states))
+    startprob[0][0] = 1.0
+    return startprob
+
+def initialise_improved_transition_matrix(n_hidden_states):
+
+    transmat = np.zeros((n_hidden_states, n_hidden_states))
+
+    for i in range(0, n_hidden_states):
+
+        if i < n_hidden_states - 2:
+            transmat[i][i] = 4.0/7.0
+            transmat[i][i+1] = 2.0/7.0
+            transmat[i][i+2] = 1.0/7.0
+
+        if i == n_hidden_states - 2:
+            transmat[i][i] = 2.0/3.0
+            transmat[i][i+1] = 1.0/3.0
+
+        if i == n_hidden_states - 1:
+            transmat[i][i] = 1.0
+
+    return transmat
+
+def initialise_improved_emission_matrix(n_hidden_states, current_digits, n_distinct_digit_observations, le):
+
+    state_counter_matrix = []
+    for i in range(0, n_hidden_states):
+        tmp = []
+        for j in range(0, n_distinct_digit_observations):
+            tmp.append(0)
+        state_counter_matrix.append(tmp)
 
 
+    for dig in current_digits:
 
-    return transmat, emitmat, startprob
+        state_len_quotient = len(dig.observations) // n_hidden_states
+        state_len_remainder = len(dig.observations) % n_hidden_states
+
+        i = 0
+        for j in range(0, n_hidden_states - 1):
+            for k in range(0, state_len_quotient):
+                observation = dig.observations[i]
+                encoded_observation = le.transform(observation)
+                state_counter_matrix[j][encoded_observation] += 1
+                i += 1
+
+        for k in range(0, state_len_remainder):
+            observation = dig.observations[i]
+            encoded_observation = le.transform(observation)
+            state_counter_matrix[n_hidden_states - 1][encoded_observation] += 1
+            i += 1
+
+    emitmat = np.random.rand(n_hidden_states, n_distinct_digit_observations)
+    for i in range(0, n_hidden_states):
+        culmul = 0
+        for j in range(0, n_distinct_digit_observations):
+            culmul += state_counter_matrix[i][j]
+        for j in range(0, n_distinct_digit_observations):
+            emitmat[i][j] = float(state_counter_matrix[i][j])/float(culmul)
+
+    return emitmat

@@ -16,7 +16,9 @@ def test_plot_all_digits():
 
 
     n_observation_classes = 256
-    n_hidden_states = 10
+    n_hidden_states = 30
+    n_iter = 1000
+    tol = 1.0
 
     parse = parser.Parser();
 
@@ -26,7 +28,7 @@ def test_plot_all_digits():
     centroids = training.get_digit_kmeans_centroids(train_digits, n_observation_classes - 3)
 
     training.set_digit_observations(train_digits, centroids, n_observation_classes)
-    hidden_markov_models = training.train_hmm(train_digits, n_observation_classes, n_hidden_states)
+    hidden_markov_models = training.train_hmm(train_digits, n_observation_classes, n_hidden_states, n_iter, tol)
 
     observation_sequence, state_sequence = sampling.sample_hidden_markov_model(hidden_markov_models[0].hidden_markov_model, 10)
 

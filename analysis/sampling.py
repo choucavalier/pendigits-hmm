@@ -69,7 +69,7 @@ def sample_hidden_markov_model(hidden_markov_model, encoded_stop_label):
         state_sequence.append(current_state)
         observation_sequence.append(current_observation)
 
-        if current_state == encoded_stop_label:
+        if current_observation == encoded_stop_label:
             found_stop = True
 
     return (observation_sequence, state_sequence)
