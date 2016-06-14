@@ -15,12 +15,14 @@ def main():
 def test_plot_all_digits():
 
 
-    n_observation_classes = 16
+    n_observation_classes = 256
     n_hidden_states = 10
 
     parse = parser.Parser();
 
     train_digits = parse.parse_file('data/pendigits-train');
+
+    '''
     test_digits = parse.parse_file('data/pendigits-test')
 
     centroids = training.get_digit_kmeans_centroids(train_digits, n_observation_classes - 2)
@@ -29,6 +31,7 @@ def test_plot_all_digits():
     hidden_markov_models = training.train_hmm(train_digits, n_observation_classes, n_hidden_states)
 
     observation_sequence, state_sequence = sampling.sample_hidden_markov_model(hidden_markov_models[0].hidden_markov_model, 10)
+    '''
 
 
 def test_multinomial_hmm():

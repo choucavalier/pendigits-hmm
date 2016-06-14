@@ -90,7 +90,7 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
             emitmat = initialise_random_emission_matrix(n_hidden_states, len(digit_observations))
             startprob = initialise_random_start_probability_matrix(n_hidden_states)
 
-            h = hmm.MultinomialHMM(n_components=n_hidden_states)
+            h = hmm.MultinomialHMM(n_components=n_hidden_states, verbose=True)
             h.startprob_ = startprob
             h.transmat_ = transmat
             h.emissionprob_ = emitmat

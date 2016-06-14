@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from numpy.linalg import inv, cholesky
 
 class Digit:
 
@@ -19,7 +20,8 @@ class Digit:
 
     def normalise(self):
         self.normalise_average()
-        self.normalise_variance()
+        #self.normalise_variance()
+        self.normalise_variance_covariance()
 
     def normalise_average(self):
 
@@ -67,6 +69,33 @@ class Digit:
                 x = float(self.curves[i][j][0]) / x_stddev
                 y = float(self.curves[i][j][1]) / y_stddev
                 self.curves[i][j] = [x, y]
+
+
+    def normalise_variance_covariance(self):
+
+        total_points = []
+        for curve in self.curves:
+            for point in curve:
+                total_points.append(point)
+
+        points_array = np.array(total_points).T
+        covariance_matrix = np.cov(points_array)
+        inverse_covariance_matrix = inv(covariance_matrix)
+        chol = cholesky(inverse_covariance_matrix)
+
+        normalised_points_array = np.dot(chol,points_array)
+
+        i = 0
+        for j in range(0, len(self.curves)):
+            for k in range(0, len(self.curves[j])):
+
+                x = normalised_points_array[0][i]
+                y = normalised_points_array[1][i]
+
+                self.curves[j][k][0] = x
+                self.curves[j][k][1] = y
+
+                i += 1
 
 
     def __repr__(self):

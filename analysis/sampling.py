@@ -74,7 +74,7 @@ def get_start_state(hidden_markov_model):
     index = 0
     while index < len(startprob) and counter < val:
         counter += startprob[index]
-        if counter < val:
+        if index < len(startprob) and counter < val:
             index += 1
 
     return index
@@ -90,7 +90,7 @@ def get_observation(hidden_markov_model, state):
     index = 0
     while index < len(emitmat[state]) and counter < val:
         counter += emitmat[state][index]
-        if counter < val:
+        if index < len(emitmat[state]) and counter < val:
             index += 1
 
     return index
@@ -106,7 +106,7 @@ def get_next_state(hidden_markov_model, state):
     index = 0
     while index < len(transmat[state]) and counter < val:
         counter += transmat[state][index]
-        if counter < val:
+        if index < len(transmat[state]) and counter < val:
             index += 1
 
     return index
