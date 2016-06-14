@@ -32,8 +32,9 @@ def get_digit_kmeans_centroids(digits, n_clusters):
 
 def set_digit_observations(digits, centroids, n_observation_classes):
 
-    pen_down_label = n_observation_classes - 2
-    pen_up_label = n_observation_classes - 1
+    pen_down_label = n_observation_classes - settings.PEN_DOWN_LABEL_DELTA
+    pen_up_label = n_observation_classes - settings.PEN_UP_LABEL_DELTA
+    stop_label = n_observation_classes - settings.STOP_LABEL_DELTA
 
     for digit in digits:
 
@@ -58,7 +59,9 @@ def set_digit_observations(digits, centroids, n_observation_classes):
                 observations.append(pen_down_label)
 
         observations.append(pen_up_label)
+        observations.append(stop_label)
         digit.set_observations(observations)
+
 
 def train_hmm(digits, n_observation_classes, n_hidden_states):
 
@@ -70,7 +73,7 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
         if digit_label == 10:
             digit_label = 0
 
-        directory = settings.HIDDEN_MARKOV_MODE_DIRECTORY + "centroids_" + str(n_observation_classes - 2)
+        directory = settings.HIDDEN_MARKOV_MODE_DIRECTORY + "centroids_" + str(n_observation_classes - 3)
         directory += "/hidden_states_" + str(n_hidden_states)
         filename = "digit_label_" + str(digit_label) + ".dat"
         path = directory + "/" + filename
@@ -90,7 +93,7 @@ def train_hmm(digits, n_observation_classes, n_hidden_states):
             emitmat = initialise_random_emission_matrix(n_hidden_states, len(digit_observations))
             startprob = initialise_random_start_probability_matrix(n_hidden_states)
 
-            h = hmm.MultinomialHMM(n_components=n_hidden_states, verbose=True)
+            h = hmm.MultinomialHMM(n_components=n_hidden_states, verbose=settings.HIDDEN_MARKOV_MODEL_VERBOSE, n_iter = settings.HIDDEN_MARKOV_MODEL_N_ITER)
             h.startprob_ = startprob
             h.transmat_ = transmat
             h.emissionprob_ = emitmat
@@ -143,3 +146,15 @@ def initialise_random_start_probability_matrix(n_hidden_states):
     startprob = np.random.rand(1, n_hidden_states)
     row_sums = startprob.sum(axis=1)
     return startprob / row_sums[:, np.newaxis]
+
+
+
+def initialise_better_matrices(n_hidden_states, digit_observations):
+
+    transmat = np.zeros(n_hidden_states, n_hidden_states)
+    emitmat = np.zeros(n_hidden_states, n_observation_classes)
+    startprob = np.zeros(1, n_hidden_states)
+
+
+
+    return transmat, emitmat, startprob

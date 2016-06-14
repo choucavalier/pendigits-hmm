@@ -75,6 +75,10 @@ def plot_digits_heatmap(digits, display_progress = False):
 
 def plot_digit_observations(digit, centroids, n_observation_classes, display_progress = False):
 
+    pen_down_label = n_observation_classes - settings.PEN_DOWN_LABEL_DELTA
+    pen_up_label = n_observation_classes - settings.PEN_UP_LABEL_DELTA
+    stop_label = n_observation_classes - settings.STOP_LABEL_DELTA
+
     fig=plt.figure()
     ax=fig.add_subplot(111)
 
@@ -85,10 +89,10 @@ def plot_digit_observations(digit, centroids, n_observation_classes, display_pro
     curves = []
     current_curve = []
     for observation in digit.observations:
-        if observation < n_observation_classes - 2:
+        if observation < pen_down_label:
             point = centroids[observation]
             current_curve.append(point)
-        elif observation == n_observation_classes - 1: # pen up
+        elif observation == pen_up_label:
             if len(current_curve) > 0:
                 curves.append(current_curve)
             current_curve = []
