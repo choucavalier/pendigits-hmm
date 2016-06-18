@@ -9,18 +9,15 @@ from scipy.spatial.distance import euclidean
 from speech_dtw import _dtw
 
 def lol(args):
-    i, x_test, train_sequences, test_predicted_labels, \
-        test_expected_labels = args
+    i, x_test, train_sequences, cost_mat, test_expected_labels = args
     costs = defaultdict(int)
     for label in train_sequences.keys():
         for x_train in train_sequences[label]:
             path, cost = _dtw.multivariate_dtw(x_test, x_train,
                                                metric='euclidean')
-            costs[label] += cost
-        costs[label] /= len(train_sequences[label]) # normalize
-    predicted_label = min(costs.keys(), key=(lambda k: costs[k]))
-    test_predicted_labels[i] = predicted_label
-    print(i, test_expected_labels[i], test_predicted_labels[i])
+            cost_mat[i, label] += cost
+        cost_mat[i, label] /= len(train_sequences[label]) # normalize
+    print(i, test_expected_labels[i], cost_mat[i])
 
 def main():
 
@@ -41,13 +38,14 @@ def main():
             train_sequences[label][i] = np.asarray(
                 np.array([list(x_train)], dtype=np.double).T, order='c')
 
-    test_predicted_labels = np.ndarray(shape=(len(test_sequences),))
+    label_set = list(train_sequences.keys())
+
+    cost_mat = np.ndarray(shape=(len(test_sequences), len(label_set)))
 
     pool = Pool()
 
-    mapped = [(i, x_test, train_sequences, test_predicted_labels,
-               test_expected_labels) for i, x_test in enumerate(test_sequences)]
-
+    mapped = [(i, x_test, train_sequences, cost_mat, test_expected_labels) \
+              for i, x_test in enumerate(test_sequences)]
 
     pool.map(lol, mapped)
     pool.close()
@@ -55,7 +53,22 @@ def main():
     pool.join()
 
 
-    with open('labels.dat', 'wb') as f: pickle.dump(test_predicted_labels, f)
+    with open('cost_mat.dat', 'wb') as f: pickle.dump(cost_mat, f)
+
+def score():
+
+    with open('test_expected_labels', 'rb') as f:
+        expected_labels = pickle.load(f)
+
+    with open('labels.dat', 'rb') as f:
+        predicted_labels = pickle.load(f)
+
+    for i in range(expected_labels.shape[0]):
+        print(expected_labels[i], predicted_labels[i])
+
+    precision = np.mean(predicted_labels == expected_labels)
+
+    print(precision)
 
 if __name__ == '__main__':
     main()
