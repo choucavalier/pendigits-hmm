@@ -38,7 +38,8 @@ def main():
             costs[label] /= len(train_sequences[label]) # normalize
         predicted_label = min(costs.keys(), key=(lambda k: costs[k]))
         test_predicted_labels[i] = predicted_label
-        print(test_expected_labels[i], test_predicted_labels[i])
+        print('{}/{}'.format(i, len(test_sequences)),
+              test_expected_labels[i], test_predicted_labels[i])
 
     with open('labels.dat', 'wb') as f: pickle.dump(test_predicted_labels, f)
 
