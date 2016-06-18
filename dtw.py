@@ -19,8 +19,7 @@ def lol(args):
         costs[label] /= len(train_sequences[label]) # normalize
     predicted_label = min(costs.keys(), key=(lambda k: costs[k]))
     test_predicted_labels[i] = predicted_label
-    print('{}/{}'.format(i, len(test_sequences)),
-          test_expected_labels[i], test_predicted_labels[i])
+    print(i, test_expected_labels[i], test_predicted_labels[i])
 
 def main():
 
