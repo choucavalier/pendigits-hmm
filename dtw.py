@@ -9,7 +9,8 @@ from scipy.spatial.distance import euclidean
 from speech_dtw import _dtw
 
 def lol(args):
-    i, x_test, train_sequences, test_predicted_labels, test_expected_labels = args
+    i, x_test, train_sequences, test_predicted_labels, \
+        test_expected_labels = args
     costs = defaultdict(int)
     for label in train_sequences.keys():
         for x_train in train_sequences[label]:
@@ -44,7 +45,8 @@ def main():
 
     pool = Pool()
 
-    mapped = [(i, x_test, train_sequences, test_predicted_labels, test_expected_labels) for i, x_test in enumerate(test_sequences)]
+    mapped = [(i, x_test, train_sequences, test_predicted_labels,
+               test_expected_labels) for i, x_test in enumerate(test_sequences)]
 
 
     pool.map(lol, mapped)
