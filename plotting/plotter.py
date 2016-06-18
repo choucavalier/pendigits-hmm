@@ -65,7 +65,7 @@ def plot_digits_heatmap(digits, display_progress = False):
             extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]];
 
             axarr[i, j].imshow(np.rot90(heatmap), extent=extent);
-            #axarr[i, j].axis([settings.IMAGE_PLOT_X_MIN, settings.IMAGE_PLOT_X_MAX, settings.IMAGE_PLOT_Y_MIN, settings.IMAGE_PLOT_Y_MAX]);
+            axarr[i, j].axis([settings.IMAGE_PLOT_X_MIN, settings.IMAGE_PLOT_X_MAX, settings.IMAGE_PLOT_Y_MIN, settings.IMAGE_PLOT_Y_MAX]);
             f.value += 10
 
     f.close()
@@ -182,6 +182,7 @@ def plot_digit_samples_heatmap(samples, display_progress = False):
             extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]];
 
             axarr[i, j].imshow(np.rot90(heatmap), extent=extent);
+            axarr[i, j].axis([settings.IMAGE_PLOT_X_MIN, settings.IMAGE_PLOT_X_MAX, settings.IMAGE_PLOT_Y_MIN, settings.IMAGE_PLOT_Y_MAX]);
 
             f.value += 10
 
