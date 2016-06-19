@@ -52,7 +52,6 @@ def main():
 
     pool.join()
 
-
     with open('cost_mat.dat', 'wb') as f: pickle.dump(cost_mat, f)
 
 def score():
@@ -60,15 +59,14 @@ def score():
     with open('test_expected_labels', 'rb') as f:
         expected_labels = pickle.load(f)
 
-    with open('labels.dat', 'rb') as f:
-        predicted_labels = pickle.load(f)
+    with open('cost_mat.dat', 'rb') as f:
+        cost_mat = pickle.load(f)
 
-    for i in range(expected_labels.shape[0]):
-        print(expected_labels[i], predicted_labels[i])
+    predicted_labels = np.argmin(cost_mat, axis=1)
 
     precision = np.mean(predicted_labels == expected_labels)
 
-    print(precision)
+    return 1 - precision
 
 if __name__ == '__main__':
-    main()
+    print(score())
