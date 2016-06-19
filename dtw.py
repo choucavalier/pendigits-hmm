@@ -6,7 +6,7 @@ from multiprocessing import Pool
 import numpy as np
 from scipy.spatial.distance import euclidean
 
-from speech_dtw import _dtw
+# from speech_dtw import _dtw
 
 def lol(args):
     i, x_test, train_sequences, cost_mat, test_expected_labels = args
